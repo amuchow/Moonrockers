@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import rospy
 import socket
-from time import sleep
+
 from std_msgs.msg import String
 from std_msgs.msg import Float32MultiArray
 import math
-
+import time
 #           TCP Packet Guide        
 #  -----------------------------------
 #  1.  Controller Control - 000000000000
@@ -85,8 +85,10 @@ TraversingOutState = 1
 MiningState = 2
 TraversingBackState = 3
 DepositingState = 4
-
-
+LowerState = 5
+RaiseState = 6
+ConveyorDumpState = 7
+Spin = 8
 global STATE
 
 
@@ -95,21 +97,28 @@ StateOneZero    = "300000010100"
 StateOneOne     = "300000000100"
 StateOneTwo     = "300000010000"
 
-StateTwoZero    = "300000110101"
-StateTwoOne     = "300000100101"
-StateTwoTwo     = "300000110001"
+StateTwoZero    = "300000110100"
+StateTwoOne     = "301100000100"
+StateTwoTwo     = "301100010000"
 
-StateThreeZero  = "300000001010"
-StateThreeOne   = "300000001000"
-StateThreeTwo   = "300000000010"
+StateThreeZero  = "300100001010"
+StateThreeOne   = "300100001000"
+StateThreeTwo   = "300100000010"
 
-StateFourZero   = "300000001011"
-StateFourOne    = "300000001001"
-StateFourTwo    = "300000000011"
+StateFourZero   = "300000001010"
+StateFourOne    = "300000001000"
+StateFourTwo    = "300000000010"
 StateFourThree  = "300010000000"
 
 
 ConveyorMove = 0
+FirstLower   = 0
+FirstRaise   = 0
+FirstDump    = 0
+FirstSpin    = 0
+MineTime     = 0
+
+
 
 moveDumpIn      = "310000000000" 
 convRev         = "301000000000"
@@ -124,10 +133,84 @@ rWhRev          = "300000000010"
 miningModeOn    = "300000000001" 
 miningModeOff   = "300000000002"
 
-TCP_IP = '127.0.0.1'
-TCP_PORT = 5005
+TCP_IP = '192.168.1.136'
+TCP_PORT = 5000
 BUFFER_SIZE = 1024
-MESSAGE = "Hello, World!"
+
+def Lower():
+    rospy.loginfo("Lower State")
+    
+    if FirstLower == 1:
+        global firstTime
+        firstTime = time.time();
+        global FirstLower
+        FirstLower = 0
+    s.send(convIn)
+    time_spent = time.time() - firstTime
+    print(time_spent)   
+    if time_spent > 3:
+        global STATE
+        STATE = Spin
+        global FirstSpin 
+        FirstSpin = 1
+        print("State: %d", STATE)
+        rospy.loginfo("Robot has finished Lowering. STATE change to Spinning(8)")
+        return
+
+def SpinState():
+    rospy.loginfo("Spin State")
+    print("SpinState")   
+    if FirstSpin == 1:
+        global firstTime
+        firstTime = time.time();
+        global FirstSpin
+        FirstSpin = 0
+    s.send(convFor)
+    time_spent = time.time() - firstTime
+    print(time_spent)
+    if time_spent > 3:
+        global STATE
+        STATE = MiningState
+        time_spent = 0
+        global MineTime
+        MineTime = 1
+        rospy.loginfo("Robot has finished Spinning. STATE change to MiningState(2)")
+        return
+
+
+def Raise():
+    rospy.loginfo("Raise State")
+    
+    if FirstRaise == 1:
+        global firstTime
+        firstTime = time.time();
+        global FirstRaise
+        FirstRaise = 0
+    s.send(convOut)
+    time_spent = time.time() - firstTime
+    print(time_spent)
+    if time_spent > 3:
+        global STATE
+        STATE = TraversingBackState
+        rospy.loginfo("Robot has finished Raising. STATE change to TraversingBack(3)")
+        return
+
+def ConveyorDump():
+    rospy.loginfo("Lower State")
+    
+    if FirstDump == 1:
+        global firstDumpTime
+        firstDumpTime = time.time();
+        global FirstDump
+        FirstDump = 0
+    s.send(moveDumpOut)
+    time_spent = time.time() - firstDumpTime
+    print(time_spent)
+    if time_spent > 7:
+        global STATE
+        STATE = TraversingOutState
+        rospy.loginfo("Robot has finished Lowering. STATE change to TraversingOut(1)")
+        return
 
 def Start():
     rospy.loginfo("Start State")
@@ -142,26 +225,27 @@ def TraversingOut(data):
     XThreshold = 6
     i = 0;
     #Actual
-    #robotSize = 46		
-    robotSize = 12
+    robotSize = 46		
+    #robotSize = 12
     
     #Actual
-    #miningDistance = 180
-    miningDistance = 60
+    miningDistance = 180
+    #miningDistance = 60
     
 
     #Finished Driving Out
     if data.data[1] > (miningDistance - robotSize):
         global STATE
-        STATE = MiningState
-        global ConveyorMove 
-        ConveyorMove = 1
-        rospy.loginfo("Robot has reached the mining area. STATE change to MINING(2)")
+        STATE = LowerState
+        global FirstLower 
+        FirstLower = 1
+        rospy.loginfo("Robot has reached the mining area. STATE change to Lower(5)")
         return
     #Drive forward
-    while i < 200:    
-        s.send(StateOneZero)
-        i+=1 
+
+    s.send(StateOneZero)
+
+
     #Too Far left
     if data.data[0] < (-1) * XThreshold:
         rospy.loginfo("Robot is too far to the left of the centerline. Correcting...")
@@ -170,9 +254,11 @@ def TraversingOut(data):
         i = 0;
         while i < 100:
             if i < 50:
-                s.send(StateOneTwo)
+                a = 1
+                #s.send(StateOneTwo)
             if i > 50:
-                s.send(StateOneZero)
+                a = 1
+                #s.send(StateOneZero)
             i+=1
         return
     #Too far right
@@ -183,33 +269,37 @@ def TraversingOut(data):
         i = 0;
         while i < 100:
             if i < 50:
-                s.send(StateOneOne)
+                a = 1
+                #s.send(StateOneOne)
             if i > 50:
-                s.send(StateOneZero)
+                a = 1
+                #s.send(StateOneZero)
             i+=1
         return
-'
+
 def Mining(data):
     rospy.loginfo("Mining State")
     miningThreshold = 6
     i = 0;
 
-    #Actual
-    #robotSize = 46		
-    robotSize = 12
+    if MineTime == 1:
+        global MineTime
+        MineTime = 0 
+        global firstMineTime
+        firstMineTime = time.time();
 
+    #Actual
+    robotSize = 46		
+    #robotSize = 12
 
     #Actual
-    #miningMaxDistance = 290
-    miningMaxDistance = 84
+    miningMaxDistance = 290
+    #miningMaxDistance = 84
 
     #Move the conveyor down into the dirt only once
     if ConveyorMove == 1:
         rospy.loginfo("Moving Conveyor Down into the Dirt")
-        while i < 10:
-            s.send(convOut)
-            sleep(.1)
-            i+=1
+        i = 0
         global ConveyorMove 
         ConveyorMove = 0;
         rospy.loginfo("Conveyor is Down in the Dirt")
@@ -217,21 +307,25 @@ def Mining(data):
     #Finished Mining
     if data.data[1] > (miningMaxDistance - robotSize - miningThreshold):
         global STATE
-        STATE = TraversingBackState
-        i = 0
-        while i < 10:
-            s.send(convIn)
-            sleep(.1)
-            i+=1
+        STATE = RaiseState
+        global FirstRaise 
+        FirstRaise = 1
         #Turn Off Mining Mode
-        s.send(miningModeOff)
+        #s.send(miningModeOff)
         rospy.loginfo("Robot has finished mining. STATE change to TraversingBack(3)")
         return
 
     #Drive Forward
-    while i < 200:    
-        s.send(StateTwoZero)
-        i+=1 
+    s.send(StateTwoZero)
+
+
+
+
+
+
+
+
+
     #Too Far Right
     if data.data[0] < (-1) * miningThreshold:
         rospy.loginfo("While Mining, Robot is too far to the left of the centerline. Correcting...")
@@ -239,9 +333,11 @@ def Mining(data):
         i = 0;
         while i < 100:
             if i < 50:
-                s.send(StateTwoTwo)
+                a = 1
+                #s.send(StateTwoTwo)
             if i > 50:
-                s.send(StateTwoZero)
+                a = 1
+                #s.send(StateTwoZero)
             i+=1
         return
     #Too Far Left
@@ -251,9 +347,11 @@ def Mining(data):
         i = 0;
         while i < 100:
             if i < 50:
-                s.send(StateTwoOne)
+                a = 1
+                #s.send(StateTwoOne)
             if i > 50:
-                s.send(StateTwoZero)
+                a = 1
+                #s.send(StateTwoZero)
             i+=1
         return
 
@@ -262,10 +360,9 @@ def TraversingBack(data):
     XThreshold = 6
     i = 0;
 
-
     #Actual
-    #depositingDistance = 30	
-    depositingDistance =   18   
+    depositingDistance = 30	
+    #depositingDistance =   18   
 
     #Finished Driving Out
     if data.data[1] < depositingDistance:
@@ -274,9 +371,13 @@ def TraversingBack(data):
         rospy.loginfo("Robot has reached the depositing area. STATE change to DEPOSITING(4)")
         return
     #Drive forward
-    while i < 200:    
-        s.send(StateThreeZero)
-        i+=1 
+    s.send(StateThreeZero)
+
+
+
+
+
+
     #Too Far left
     if data.data[0] < (-1) * XThreshold:
         rospy.loginfo("Robot is too far to the left of the centerline. Correcting...")
@@ -286,9 +387,11 @@ def TraversingBack(data):
         
         while i < 100:
             if i < 50:
-                s.send(StateThreeOne)
+                a = 1
+                #s.send(StateThreeOne)
             if i > 50:
-                s.send(StateThreeZero)
+                a = 1
+                #s.send(StateThreeZero)
             i+=1
         return
     #Too far right
@@ -300,9 +403,11 @@ def TraversingBack(data):
         
         while i < 100:
             if i < 50:
-                s.send(StateThreeOne)
+                a = 1
+                #s.send(StateThreeOne)
             if i > 50:
-                s.send(StateThreeZero)
+                a = 1
+                #s.send(StateThreeZero)
             i+=1
         return
 
@@ -318,13 +423,18 @@ def Depositing(data):
 
         #End DUmping Routine:
         global STATE
-        STATE = TraversingOutState
+        STATE = ConveyorDumpState
+
+        global FirstDump 
+        FirstDump = 1
         rospy.loginfo("Robot has reached the depositing area. STATE change to DEPOSITING(4)")
         return
-    #Drive forward
-    while i < 200:    
-        s.send(StateFourZero)
-        i+=1 
+    #Drive forward 
+    s.send(StateFourZero)
+
+
+
+
     #Too Far left
     if data.data[0] < (-1) * XThreshold:
         rospy.loginfo("Robot is too far to the left of the centerline. Correcting...")
@@ -334,9 +444,11 @@ def Depositing(data):
         
         while i < 100:
             if i < 50:
-                s.send(StateFourOne)
+                a = 1
+                #s.send(StateFourOne)
             if i > 50:
-                s.send(StateFourZero)
+                a = 1
+                #s.send(StateFourZero)
             i+=1
         return
     #Too far right
@@ -347,18 +459,17 @@ def Depositing(data):
         i = 0;
         while i < 100:
             if i < 50:
-                s.send(StateFourOne)
+                a = 1
+                #s.send(StateFourOne)
             if i > 50:
-                s.send(StateFourZero)
+                a = 1
+                #s.send(StateFourZero)
             i+=1
         return
 
 
-
-
-
-
 def TraversingOutTest(desiredDistance, data):
+    TraversingOut(data)
     if data.data[1] > desiredDistance:
         rospy.loginfo("We made it to the spot. STATE CHANGE TO 2")
         STATE = 2
@@ -408,7 +519,7 @@ def callback(data):
     Test = 0
     #Test 1: Drive Forward until X
     if Test == 1:
-        TraversingOutTest(36, data)
+        TraversingOutTest(80, data)
     elif Test == 2:
         TraversingBackTest(12, data) 
     elif Test == 3:
@@ -427,7 +538,17 @@ def callback(data):
             TraversingBack(data)
         if STATE == 4:
             Depositing(data)
+        if STATE == 5:
+            Lower()
+        if STATE == 6:
+            Raise()
+        if STATE == 7:
+            ConveyorDump()
+        if STATE == 8:
+            SpinState()
+
         #sleep(1)
+        global FirstDump
 
     global XChange
     XChange = data.data[0]

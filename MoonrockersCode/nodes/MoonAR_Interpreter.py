@@ -32,9 +32,9 @@ class Gui(object):
         w.pack()
         self.lbl = Label(root, text="")
         #StartX, StartY, EndX, EndY                   
-        w.create_rectangle(100, 25, 600, 425)
-        w.create_rectangle(100, 25, 600, 150)
-        w.create_rectangle(100, 25, 600, 600)
+        w.create_rectangle(100,  25, 600, 485)
+        w.create_rectangle(100,  25, 600, 255)
+        w.create_rectangle(100,  25, 600, 600)
         w.create_rectangle(325, 600, 375, 620)
         self.angleText = w.create_text(200, 650, text = "Angle:")
         self.awayText = w.create_text(450, 650, text = "Away:")
@@ -72,10 +72,10 @@ class Gui(object):
         if self.angle < 3:
             self.negativeAngle = 0
 
-        zScale = 600 - 10 * self.myZ
+        zScale = 600 - 1.94 * self.myZ
         if self.negativeAngle == 1:
             w.itemconfigure(self.angleText, text="Angle: -"   + str(int(self.angle)) + " degrees")
-            xScale = 350 - 10 * self.myX
+            xScale = 350 - 3.34 * self.myX
         else:
             w.itemconfigure(self.angleText, text="Angle: "   + str(int(self.angle)) + " degrees")
             xScale = 350 + 5 * self.myX
@@ -111,7 +111,7 @@ class Gui(object):
         angZ = data.pose.pose.orientation.z
 
         if data.id == 0:
-            print "15cm Tag"
+            print "30cm Tag"
             print "Position: (x, y, z)->(% 6.4f,% 6.4f,% 6.4f)" % (posX, posY, posZ)
             print "Rotation: (q, x, y, z) -> (%6.4f, % 6.4f,% 6.4f,% 6.4f)" %  (angW, angX, angY, angZ)
 
@@ -121,8 +121,8 @@ class Gui(object):
             else:
                 Angle = (math.acos(angX) + math.asin(angZ)) * 180 / math.pi
                 self.negativeAngle = 0
-            distCrow = posZ * 3.28 * 12
-            distX = posX * 3.28 * 12 * (5 / 16.2)
+            distCrow = posZ * 39.37 * 1.167 * 1.1
+            distX    = posX * 39.37 * 1.167 * 1.1
 
 
             CrowError = (0.054 * distCrow + .0411)
@@ -208,8 +208,8 @@ class Gui(object):
             else:
                 Angle = (math.acos(angX) + math.asin(angZ)) * 180 / math.pi
                 self.negativeAngle = 0
-            distCrow = posZ * 3.28 * 12 * ( 5 / 16.2 )
-            distX = posX * 3.28 * 12 * (5 / 16.2)
+            distCrow = posZ * 39.37 * ( 5.0 / 36.195) * 1.1
+            distX    = posX * 39.37 * ( 5.0 / 36.195) * 1.1
 
             CrowError = (0.094 * distCrow + .0411)
             distCrow = distCrow - CrowError;
