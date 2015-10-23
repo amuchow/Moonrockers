@@ -1,0 +1,29 @@
+﻿Build started 3/23/2015 10:11:03 AM.
+     1>Project "C:\Users\1931426\Desktop\Google Drive\MoonRockers 2014-2015\CENG\RobotProgram\Controller\Robot\Robot.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Client.cpp CXBOXController.cpp robotmain.cpp
+         Client.cpp
+         CXBOXController.cpp
+     1>c:\users\1931426\desktop\google drive\moonrockers 2014-2015\ceng\robotprogram\controller\robot\CXBOXController.h(17): warning C4005: 'XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE' : macro redefinition
+                 C:\Program Files\Windows Kits\8.1\Include\um\XInput.h(100) : see previous definition of 'XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE'
+     1>c:\users\1931426\desktop\google drive\moonrockers 2014-2015\ceng\robotprogram\controller\robot\CXBOXController.h(18): warning C4005: 'XINPUT_GAMEPAD_TRIGGER_THRESHOLD' : macro redefinition
+                 C:\Program Files\Windows Kits\8.1\Include\um\XInput.h(102) : see previous definition of 'XINPUT_GAMEPAD_TRIGGER_THRESHOLD'
+     1>CXBOXController.cpp(14): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+         robotmain.cpp
+     1>c:\users\1931426\desktop\google drive\moonrockers 2014-2015\ceng\robotprogram\controller\robot\CXBOXController.h(17): warning C4005: 'XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE' : macro redefinition
+                 C:\Program Files\Windows Kits\8.1\Include\um\XInput.h(100) : see previous definition of 'XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE'
+     1>c:\users\1931426\desktop\google drive\moonrockers 2014-2015\ceng\robotprogram\controller\robot\CXBOXController.h(18): warning C4005: 'XINPUT_GAMEPAD_TRIGGER_THRESHOLD' : macro redefinition
+                 C:\Program Files\Windows Kits\8.1\Include\um\XInput.h(102) : see previous definition of 'XINPUT_GAMEPAD_TRIGGER_THRESHOLD'
+     1>robotmain.cpp(18): warning C4101: 'flag' : unreferenced local variable
+       Link:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\1931426\Desktop\Google Drive\MoonRockers 2014-2015\CENG\RobotProgram\Controller\Release\Robot.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\1931426\Desktop\Google Drive\MoonRockers 2014-2015\CENG\RobotProgram\Controller\Release\Robot.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\1931426\Desktop\Google Drive\MoonRockers 2014-2015\CENG\RobotProgram\Controller\Release\Robot.lib" /MACHINE:X86 /SAFESEH Release\Client.obj
+         Release\CXBOXController.obj
+         Release\robotmain.obj
+         Generating code
+         Finished generating code
+         Robot.vcxproj -> C:\Users\1931426\Desktop\Google Drive\MoonRockers 2014-2015\CENG\RobotProgram\Controller\Release\Robot.exe
+     1>Done Building Project "C:\Users\1931426\Desktop\Google Drive\MoonRockers 2014-2015\CENG\RobotProgram\Controller\Robot\Robot.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:02.43
