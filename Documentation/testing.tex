@@ -1,0 +1,42 @@
+% !TEX root = SystemTemplate.tex
+
+\chapter{System  and Unit Testing}
+
+This section describes the approach taken with regard to system and unit testing. 
+
+\section{Overview}
+For a lot of our testing, we will be performing live tests on the robot once the code is on there. We will be testing on the replica collection bin that we have in our lab during the winter, and then we will be testing out on the sand volleyball court once the weather gets nicer. 
+
+
+
+\section{Test Setup and Execution}
+
+
+\subsection{Test \#1}
+As a robot, I want to be autonomous.
+
+\subsubsection{Test \#1 Breakdown}
+We will be setting up a simulated competition pit in the sand volleyball court once each individual section has been tested.
+
+\subsection{Test \#2} 
+As a robot, I want to be able to see the collection bin and determine my location from it.
+
+\subsubsection{Test \#2 Breakdown}
+We will be walking the camera around our lab and testing the vision algorithms to be sure they are functioning properly.
+
+\subsection{Test \#3} 
+As a robot, I want to be able to navigate to a predefined location within the competition pit
+\subsubsection{Test \#3 Breakdown}
+We will be running the robot around the lab and setting up locations where it will travel from and to.
+
+\subsection{Test \#4} 
+As a robot I want to mine in a predefined area.
+\subsubsection{Test \#4 Breakdown}
+We will be using the previous test to take us to a location and then make sure it will mine once it gets there.
+
+
+\subsection{Test \#5} 
+As a robot, I want to return to the collector bin and deposit what i've mined.
+\subsubsection{Test \#5 Breakdown}
+We will be starting the robot at some distance from the collector bin, and then having it travel back to the collector bin, orient itself to be facing away from it, back up, and then dump into the collector bin.
+

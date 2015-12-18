@@ -1,0 +1,92 @@
+% !TEX root = SystemTemplate.tex
+\chapter{User Stories,  Requirements,Backlog and Deliverables}
+\section{Overview}
+This section of the report will contain all of my user stories and discuss the entirety of the backlog and requirements
+
+
+\subsection{Scope}
+
+This portion will cover each user story in depth. The tests for each of those stories will be covered in the testing section of the design document.
+
+
+
+\subsection{Purpose of the System}
+The purpose of this system is to autonomously run the Moonrockers robot at the NRMC.
+
+
+\section{ Stakeholder Information}
+
+The stakeholders in this competition are myself and the moonrockers team.
+
+This section would provide the basic description of all of the stakeholders for 
+the project.  Who has an interest in the successful and/or unsuccessful completion 
+of this project? 
+
+
+\subsection{Customer or End User (Product Owner)}
+The Product Owner is the moonrockers team. They will oversee the product and prioritize things in the backlog. They will interact with me throughout the project to drive it forward.
+
+\subsection{Management or Instructor (Scrum Master)}
+There will be no scrum master in this project.
+
+
+
+\subsection{Developers --Testers}
+I will be the one testing, designing, and developing.
+
+
+\section{Requirements and Design Constraints}
+The requirements for this project is that I develop and autonomous system to control the robot during the competition. The robot needs to navigate from its starting position, over the obstacle section, to the mining section of the pit. From there it needs to mine in the pit, and then backtrack through the obstacle section and deposit what it has mined in the collection bin, and repeat for the entire 10 minute run.  As far as 
+
+\subsection{System  Requirements}
+
+The system must run on and ODroid and fit inside of the current electronics box.
+
+
+\subsection{Network Requirements}
+We currently use a router to transmit data from one device to another.
+
+
+\subsection{Development Environment Requirements}
+Must run in Ubuntu 14.04
+
+
+\subsection{Project  Management Methodology}
+There will be two meetings a week. One with the advisors, and one with the remainder of the team. We will discuss the backlog during each meeting and also discuss progress made. There will be a total of six sprints throughout this project and the team will have access to the sprint and product backlogs if desired. Each sprint will last two weeks and there will be a review week after each sprint. There are no restrictions on source control as it will be hosted on github and only have one developer committing to the repository.
+
+\section{User Stories}
+
+
+\subsection{User Story \#1}
+As a robot, I want to be autonomous.
+
+\subsubsection{User Story \#1 Breakdown}
+The project as a whole requires the robot to be autonomous, and will perform various tasks in the competition pit.
+
+\subsection{User Story \#2} 
+As a robot, I want to be able to see the collection bin and determine my location from it.
+
+\subsubsection{User Story \#2 Breakdown}
+We will need to base our location off of an AR tag attached that will be attached to the collection bin. We have received code from Daniel Nix from his project he did last year in senior design. We will be using this code to implement our vision system.
+
+\subsection{User Story \#3} 
+As a robot, I want to be able to navigate to a predefined location within the competition pi
+\subsubsection{User Story \#3 Breakdown}
+We will need to be able to navigate to predefined locations, as we we will need to move from the starting location to the mining section. This will require knowing where we are in the pit.
+
+\subsection{User Story \#4} 
+As a robot I want to mine in a predefined area.
+\subsubsection{User Story \#4 Breakdown}
+Once the robot reaches a certain area, it will need to begin mining. This will require sending a signal to the robot to begin mining once it reaches that area.
+
+
+\subsection{User Story \#5} 
+As a robot, I want to return to the collector bin and deposit what i've mined.
+\subsubsection{User Story \#5 Breakdown}
+The robot will need to return over the obstacle section to the collector bin and dump what it has mined. This will use the previous user story and expand on it by backing up to the collector bin and then activating the dump routine.
+
+
+
+\section{Research Results}
+Up to this point a lot was researched for the robot. It was decided to use an ODroid XU4 for the processing, as well as use ROS for programming the system.
+

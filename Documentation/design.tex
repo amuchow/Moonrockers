@@ -1,0 +1,68 @@
+% !TEX root = SystemTemplate.tex
+
+\chapter{Design  and Implementation}
+This section will go over all of the design and implementation details of the system. There are three main components to our project. They are the vision system, the decision making system, and the telecommunication system.
+
+The vision system will allow the robot to be able to tell where it is within the competition pit. This is necessary due to the terrain being very sandy, thus causing typicaly methods of odometry to be uneffective.
+
+The decision making system will allow the robot to make decisions when in the competition pit. This will be the brain of the robot and will tell all of the working parts what to do. We will have various logic setup for all of the areas of the pit, as well as data being stored as to wether or not it has been mining for a long enough to take its collected material back to dump, if it's stuck.
+
+\section{Vision based location }
+
+\subsection{Technologies  Used}
+For this component, we will be using a rgb camera, as well as an ODroid XU4, and it will be supported by ROS. We will be mounting the camera on the back of the robot, and this will allow us to back up to the collection bin with precision. We are also using an AR tag that will be attached to the collector bin.
+
+\subsection{Component  Overview}
+As far as features of this component goes, it will allow a user, the robot in this case, to point a camera at the AR tag and be able to know how far away it is, and what angle you are viewing it from.
+
+\subsection{Phase Overview}
+This is an extension of the Phase Overview above, but specific to this component. 
+ It is meant to be basically a brief list with space for marking the phase status. 
+
+
+\subsection{Design Details}
+Will be documented once code is up and running.
+
+
+\section{Decision making system}
+
+\subsection{Technologies  Used}
+This component will use the visual location component, and then also be running on the ODroid XU4 via ROS. 
+
+
+\subsection{Component  Overview}
+The features of this system will include:
+\itemize
+\item{Ability to navigate from the starting location to the mining area}
+\item{The ability to mine in the mining area after determining that it is in the mining area}
+\item{The ability to back up to the collector bin after mining}
+\item{The ability to get the robot unstuck if it has not moved within a certain amount of time}
+\item{The ability to not run into walls}
+\enditemize
+
+
+\subsection{Design Details}
+Will be further documented after vision system is implemented.
+
+
+\section{Telecommunication }
+
+\subsection{Technologies  Used}
+This component uses a computer running windows, a router, an xbox controller, and a PCDuino. 
+
+\subsection{Component  Overview}
+The features of the telecommunication system is mainly just controlling the robot from the xbox controller.
+
+\subsection{Data Flow Diagram}
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[width=0.75\textwidth]{./telecomm}
+\end{center}
+\caption{System Diagram \label{systemdiagram}}
+\end{figure}
+
+\subsection{Design Details}
+Currently, this system is working by interacting the windows pc with the pcduino via a TCP server set up on the network that they are both connected to. The windows program repeatedly loops and takes in the xbox controllers input and then sends over an array to the PCDuino, which maps each array variable to a pin which is connected to a working part of the robot. We currently have our drive motors mapped to the control sticks on the robot, as well as forward and reverse for our conveyor system mapped to the Y and Right Bumper buttons, and the dumping mechanism mapped to the Left Bumper and B buttons.
+
+
