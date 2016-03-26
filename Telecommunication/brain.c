@@ -69,7 +69,7 @@ void loop()
 
      if(n>0)
     {
-      if(sendBuff[6]=='1')           digitalWrite(LeftFor, HIGH);
+      if(sendBuff[6]=='1')           zzdigitalWrite(LeftFor, HIGH);
       else                             digitalWrite(LeftFor, LOW);
       if(sendBuff[7]=='1')           digitalWrite(LeftRev, HIGH);
       else                             digitalWrite(LeftRev, LOW);
