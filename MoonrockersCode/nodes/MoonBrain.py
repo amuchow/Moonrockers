@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-
+import rospy
 import socket
 from time import sleep
-
+from std_msgs.msg import String
 #           TCP Packet Guide        
 #  -----------------------------------
 #  1.  Move Dump In      - 10000000000
@@ -36,31 +36,43 @@ TCP_PORT = 5005
 BUFFER_SIZE = 1024
 MESSAGE = "Hello, World!"
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((TCP_IP, TCP_PORT))
-#while 1:
-   
-s.send(moveDumpIn)
-sleep(1);
-s.send(convRev)
-sleep(1);
-s.send(convOut)
-sleep(1);
-s.send(moveDumpOut)
-sleep(1);
-s.send(convIn)
-sleep(1);
-s.send(convFor)
-sleep(1);
-s.send(lWhFor)
-sleep(1);
-s.send(moveDumpIn)
-sleep(1);
-s.send(lWhRev)
-sleep(1);
-s.send(rWhRev)
-sleep(1);
-s.send(miningModeOn)
-sleep(1);
+"""
+	s.send(moveDumpIn)
+	sleep(1);
+	s.send(convRev)
+	sleep(1);
+	s.send(convOut)
+	sleep(1);
+	s.send(moveDumpOut)
+	sleep(1);
+	s.send(convIn)
+	sleep(1);
+	s.send(convFor)
+	sleep(1);
+	s.send(lWhFor)
+	sleep(1);
+	s.send(moveDumpIn)
+	sleep(1);
+	s.send(lWhRev)
+	sleep(1);
+	s.send(rWhRev)
+	sleep(1);
+	s.send(miningModeOn)
+	sleep(1);
+"""
 
-s.close()
+def TCPCleanup():
+	s.close()
+
+def callback(data):
+	rospy.loginfo("I heard %s",data.data)
+	s.send(moveDumpIn)
+	sleep(1);
+
+if __name__ == '__main__':
+	rospy.init_node('MoonBrain')
+	rospy.Subscriber("/AlexAR", String, callback)
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.connect((TCP_IP, TCP_PORT))
+	rospy.spin()
+

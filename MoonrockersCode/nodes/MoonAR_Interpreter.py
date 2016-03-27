@@ -11,6 +11,8 @@ from ar_track_alvar_msgs.msg import AlvarMarkers, AlvarMarker
 from std_msgs.msg import Int16
 import time
 import signal
+from std_msgs.msg import String
+
 
 def arCallback(data):
     rospy.logdebug(rospy.get_name() + ": Received Quaternion")
@@ -38,9 +40,14 @@ def arCallback(data):
     print "Angle = %6.3f Degrees, True Distance from Marker = %6.3f\"" % (Angle, distCrow)
     print ""
     #print "Downrange Distance from Marker = %6.3f\"" % (distOut)
-    #print ""
+    pub.publish("hello world")
+
+
 
 if __name__ == '__main__':
     rospy.init_node('MoonAR_interpreter', anonymous=True)
+    pub = rospy.Publisher('AlexAR', String, queue_size=10)
     rospy.Subscriber("/ar_pose_marker", AlvarMarkers, arCallback)
+
     rospy.spin()
+
