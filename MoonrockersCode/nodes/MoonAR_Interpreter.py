@@ -34,8 +34,8 @@ def arCallback(data):
     distOffset = math.sin(Angle) * data.pose.pose.position.z * 3.28 * 12;
     distCrow = data.pose.pose.position.z * 3.28 * 12;
 
-    #CrowError = ((0.0467 * distCrow -.1299)+(0.0042*pow(distCrow,1.9133)))/2;
-    #distCrow = distCrow - CrowError;
+    CrowError = (0.094 * distCrow + .0411)
+    distCrow = distCrow - CrowError;
 
     print "Angle = %6.3f Degrees, True Distance from Marker = %6.3f\"" % (Angle, distCrow)
     print ""
