@@ -3,6 +3,9 @@ import rospy
 import socket
 from time import sleep
 from std_msgs.msg import String
+from std_msgs.msg import Float32MultiArray
+
+
 #           TCP Packet Guide        
 #  -----------------------------------
 #  1.  Move Dump In      - 10000000000
@@ -71,7 +74,7 @@ def callback(data):
 
 if __name__ == '__main__':
 	rospy.init_node('MoonBrain')
-	rospy.Subscriber("/AlexAR", String, callback)
+	rospy.Subscriber("/AlexAR", Float32MultiArray, callback)
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.connect((TCP_IP, TCP_PORT))
 	rospy.spin()
