@@ -27,6 +27,7 @@ class Gui(object):
         rospy.Subscriber("/ar_pose_marker", AlvarMarkers, self.arCallback)
         self.pub = rospy.Publisher('AlexAR', Float32MultiArray, queue_size=10)
         self.master = master
+        master.wm_title("AR Data Map")
         global w
         w = Canvas(self.master, width=700, height=700)
         w.pack()
@@ -121,6 +122,15 @@ class Gui(object):
             else:
                 Angle = (math.acos(angX) + math.asin(angZ)) * 180 / math.pi
                 self.negativeAngle = 0
+
+            if angY < 0:
+                    AngleY = (math.acos(angX) + -1 * math.asin(angY)) * 180 / math.pi
+                else:
+                    AngleY = (math.acos(angX) + math.asin(angY)) * 180 / math.pi
+
+            print "AngleY = %6.3f Degrees" % (AngleY)
+            Angle = Angle - AngleY
+
             distCrow = posZ * 39.37 * 1.167 * 1.1
             distX    = posX * 39.37 * 1.167 * 1.1
 
@@ -208,6 +218,14 @@ class Gui(object):
             else:
                 Angle = (math.acos(angX) + math.asin(angZ)) * 180 / math.pi
                 self.negativeAngle = 0
+
+            if angY < 0:
+                    AngleY = (math.acos(angX) + -1 * math.asin(angY)) * 180 / math.pi
+                else:
+                    AngleY = (math.acos(angX) + math.asin(angY)) * 180 / math.pi
+
+            print "AngleY = %6.3f Degrees" % (AngleY)
+            Angle = Angle - AngleY
             distCrow = posZ * 39.37 * ( 5.0 / 36.195) * 1.1
             distX    = posX * 39.37 * ( 5.0 / 36.195) * 1.1
 
