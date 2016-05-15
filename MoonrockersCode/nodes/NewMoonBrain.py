@@ -152,6 +152,10 @@ class Gui(object):
         self.zText = canvas.create_text(100, 200,  text = "    Current Z :")
         self.xText = canvas.create_text(100, 225,   text = "    Current X :")
         self.stateText = canvas.create_text(100, 250, text = "Current State:")
+
+	self.splitLine = canvas.create_line(175, 175, 175, 300)
+        self.stateGoalSpotText = canvas.create_text(300, 175,  text = "Goal:")
+        self.stateGoalText = canvas.create_text(350, 200,  text = "")
         
         self.update()
 
@@ -166,6 +170,7 @@ class Gui(object):
         if self.STATE == StartState:
             canvas.itemconfig(self.StateNineRectangle, outline = "#000000")
             canvas.itemconfig(self.StateZeroRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Skip to Traversing")
             self.Start()
         else:
             canvas.itemconfig(self.StateZeroRectangle, outline = "#000000")
@@ -175,6 +180,7 @@ class Gui(object):
             canvas.itemconfig(self.StateNineRectangle, outline = "#000000")
             canvas.itemconfig(self.StateZeroRectangle, outline = "#000000")
             canvas.itemconfig(self.StateOneRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Go forward until you get to " + str(StartMiningDistance - RobotSize) + " in " )
             self.TraversingOut()
         else:
             canvas.itemconfig(self.StateOneRectangle, outline = "#000000")
@@ -183,6 +189,7 @@ class Gui(object):
         if self.STATE == LowerConveyorState :
             canvas.itemconfig(self.StateOneRectangle, outline = "#000000")
             canvas.itemconfig(self.StateTwoRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Lowe Conveyor: Count for 3 seconds")
             self.LowerConveyor()
         else:
             canvas.itemconfig(self.StateTwoRectangle, outline = "#000000")
@@ -191,6 +198,7 @@ class Gui(object):
         if self.STATE == MineSpinState:
             canvas.itemconfig(self.StateTwoRectangle, outline = "#000000")
             canvas.itemconfig(self.StateThreeRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "MineSpin: Count for 3 seconds")
             self.MineSpin()
         else:
             canvas.itemconfig(self.StateThreeRectangle, outline = "#000000")
@@ -199,6 +207,7 @@ class Gui(object):
         if self.STATE == MiningState:
             canvas.itemconfig(self.StateThreeRectangle, outline = "#000000")
             canvas.itemconfig(self.StateFourRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Go forward until you get to " + str(StopMiningDistance - RobotSize) + " in to go to Finish Spin\nand Raise State\n" + "For Rear Conveyor, go until " + str(StopMiningDistance - RobotSize - 30) + " in , " + str(StopMiningDistance - RobotSize - 60) + " in , or " + str(StopMiningDistance - RobotSize - 90) + " in.")
             self.Mining()
         else:
             canvas.itemconfig(self.StateFourRectangle, outline = "#000000")
@@ -207,6 +216,7 @@ class Gui(object):
         if self.STATE == RearConveyorState:
             canvas.itemconfig(self.StateFourRectangle, outline = "#000000")
             canvas.itemconfig(self.StateFiveRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Rear Conveyor: Count for 2 seconds")
             self.RearConveyor()
         else:
             canvas.itemconfig(self.StateFiveRectangle, outline = "#000000")
@@ -215,6 +225,7 @@ class Gui(object):
         if self.STATE == FinishMineSpinState:
             canvas.itemconfig(self.StateFiveRectangle, outline = "#000000")
             canvas.itemconfig(self.StateSixRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "FinishMineSpin: Count for 3 seconds")
             self.FinishMineSpin()
         else:
             canvas.itemconfig(self.StateSixRectangle, outline = "#000000")
@@ -223,6 +234,8 @@ class Gui(object):
         if self.STATE == TraversingBackState:
             canvas.itemconfig(self.StateSixRectangle, outline = "#000000")
             canvas.itemconfig(self.StateSevenRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Go Backward until you get to " + str(CloseDepositDistance) + " in " )
+		
             self.TraversingBack()
         else:
             canvas.itemconfig(self.StateSevenRectangle, outline = "#000000")
@@ -231,6 +244,7 @@ class Gui(object):
         if self.STATE == TraversingDepState:
             canvas.itemconfig(self.StateSevenRectangle, outline = "#000000")
             canvas.itemconfig(self.StateEightRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Go Backward until you get to " + str(DepositDistance) + " in " )
             self.TraversingDep()
         else:
             canvas.itemconfig(self.StateEightRectangle, outline = "#000000")
@@ -239,6 +253,7 @@ class Gui(object):
         if self.STATE == TimeToDepositState:
             canvas.itemconfig(self.StateEightRectangle, outline = "#000000")
             canvas.itemconfig(self.StateNineRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "FinishMineSpin: Count for 7 seconds")
             self.TimeToDeposit()
         else:
             canvas.itemconfig(self.StateNineRectangle, outline = "#000000")
