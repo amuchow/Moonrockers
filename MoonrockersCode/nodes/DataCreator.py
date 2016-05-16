@@ -26,9 +26,24 @@ class Gui(object):
         self.XValueText = Entry(master, textvariable=XValue)
         self.XValueText.pack()
 
+        angle = Label(master, text="Angle")
+        angle.pack()
+        AngleValue = StringVar()
+        self.AngleValueText = Entry(master, textvariable=AngleValue)
+        self.AngleValueText.pack()
+
+
+        negativeAngleFlag = Label(master, text="Negative Flag")
+        negativeAngleFlag.pack()
+        negativeAngleFlagValue = StringVar()
+        self.negativeAngleFlagValueText = Entry(master, textvariable=negativeAngleFlagValue)
+        self.negativeAngleFlagValueText.pack()
+
         ZValue.set("1")
         XValue.set("1")
-
+        AngleValue.set("1")
+        negativeAngleFlagValue("1")
+    
         B = Button(master, text ="Send", command = self.helloCallBack)
         B.pack()
         #self.update()
@@ -39,12 +54,15 @@ class Gui(object):
 
         myZ = self.ZValueText.get()
         myX = self.XValueText.get()
-
+        myAngle = self.AngleValueText.get()
+        myFlag = self.negativeAngleFlagValueText.get()
 
 
         packet = Float32MultiArray()
         packet.data.append(int(myX))
         packet.data.append(int(myZ))
+        packet.data.append(int(myAngle))
+        packet.data.append(int(myFlag))
         Packet = Float32MultiArray()
 
         self.pub.publish(packet)

@@ -16,6 +16,8 @@ from std_msgs.msg import Int16
 import time
 import signal
 import threading
+import Queue
+
 
 #Global Standards for State Machine
 RobotSize                = 46
@@ -27,6 +29,7 @@ CloseDepositDistance     = 30
 DepositDistance          = 20
 AllowableChangeThreshold = .15
 OutlierDataThreshold     = 5
+CanConveyor = 1
 
 
 #Global States for State Machine
@@ -40,44 +43,54 @@ FinishMineSpinState = 6
 TraversingBackState = 7
 TraversingDepState  = 8
 TimeToDepositState  = 9
+AngleAdjustForwardState = 19
+RotateFaceRightState = 20
+RotateFaceLeftState = 21
+AngleAdjustReverseState = 22
+RotateFaceRightReverseState = 23
+RotateFaceLeftReverseState = 24
+
 
 #TCP Globals
-TCP_IP = '127.0.0.1'
+#TCP_IP = '127.0.0.1'
+TCP_IP = '192.168.1.136'
 TCP_PORT = 5000
 BUFFER_SIZE = 12
 
 #State Globals
 
-RaiseAndSpin    = "300100100000"
+RaiseAndSpin    = "300100100002"
+nop             = "300000000002" 
+moveDumpIn      = "310000000002" 
+convRev         = "301000000002"
+convOut         = "300100000002" 
+moveDumpOut     = "300010000002"
+convIn          = "300001000002" 
+convFor         = "300000100002"
+lWhFor          = "300000010002" 
+lWhRev          = "300000001002"
+rWhFor          = "300000000102" 
+rWhRev          = "300000000012"
+miningModeOn    = "300000000002"
 
-moveDumpIn      = "310000000000" 
-convRev         = "301000000000"
-convOut         = "300100000000" 
-moveDumpOut     = "300010000000"
-convIn          = "300001000000" 
-convFor         = "300000100000"
-lWhFor          = "300000010000" 
-lWhRev          = "300000001000"
-rWhFor          = "300000000100" 
-rWhRev          = "300000000010"
-miningModeOn    = "300000000001" 
+#Robot Spin States
+LeftForwardRightBackward = "300000001102"
+RightForwardLeftBackward = "300000010012"
 
-StateOneZero    = "300000010100"
-StateOneOne     = "300000000100"
-StateOneTwo     = "300000010000"
+StateOneZero    = "300000010102"
+StateOneOne     = "300000000102"
+StateOneTwo     = "300000010002"
+StateTwoZero    = "300000110102"
+StateTwoOne     = "301100000102"
+StateTwoTwo     = "301100010002"
 
-StateTwoZero    = "300000110100"
-StateTwoOne     = "301100000100"
-StateTwoTwo     = "301100010000"
-
-StateThreeZero  = "300100001010"
-StateThreeOne   = "300100001000"
-StateThreeTwo   = "300100000010"
-
-StateFourZero   = "300000001010"
-StateFourOne    = "300000001000"
-StateFourTwo    = "300000000010"
-StateFourThree  = "300010000000"
+StateThreeZero  = "300100001012"
+StateThreeOne   = "300100001002"
+StateThreeTwo   = "300100000012"
+StateFourZero   = "300000001012"
+StateFourOne    = "300000001002"
+StateFourTwo    = "300000000012"
+StateFourThree  = "300010000002"
 
 class Gui(object):
     def __init__(self, master):
@@ -85,11 +98,15 @@ class Gui(object):
         self.STATE = 0
         self.Z = -1
         self.X = -1
+        self.Angle = -1
         self.time = time.time()
         self.changeCounter = 0        
         self.ConveyorOne    = 0
         self.ConveyorTwo    = 0
         self.ConveyorThree  = 0
+        self.AngleFlag = -1
+        #Global Canvas for drawing
+        global canvas
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect((TCP_IP, TCP_PORT))
@@ -97,7 +114,6 @@ class Gui(object):
         rospy.Subscriber("/AlexAR", Float32MultiArray, self.callback)
         self.master = master
         master.wm_title("AR State Machine")
-        global canvas
         canvas = Canvas(self.master, width=700, height=700)
         canvas.pack()
         self.lbl = Label(root, text="")
@@ -152,8 +168,8 @@ class Gui(object):
         self.zText = canvas.create_text(100, 200,  text = "    Current Z :")
         self.xText = canvas.create_text(100, 225,   text = "    Current X :")
         self.stateText = canvas.create_text(100, 250, text = "Current State:")
-
-	self.splitLine = canvas.create_line(175, 175, 175, 300)
+        self.angleText = canvas.create_text(100, 275, text = "Angle: ")
+        self.splitLine = canvas.create_line(175, 175, 175, 300)
         self.stateGoalSpotText = canvas.create_text(300, 175,  text = "Goal:")
         self.stateGoalText = canvas.create_text(350, 200,  text = "")
         
@@ -161,7 +177,7 @@ class Gui(object):
 
     def run(self):
         self.lbl.pack()
-        self.lbl.after(1000, self.update)
+        self.lbl.after(250, self.update)
         self.master.mainloop()
 
     def update(self):
@@ -235,7 +251,7 @@ class Gui(object):
             canvas.itemconfig(self.StateSixRectangle, outline = "#000000")
             canvas.itemconfig(self.StateSevenRectangle, outline = "#FF0000")
             canvas.itemconfig(self.stateGoalText, text = "Go Backward until you get to " + str(CloseDepositDistance) + " in " )
-		
+        
             self.TraversingBack()
         else:
             canvas.itemconfig(self.StateSevenRectangle, outline = "#000000")
@@ -257,14 +273,62 @@ class Gui(object):
             self.TimeToDeposit()
         else:
             canvas.itemconfig(self.StateNineRectangle, outline = "#000000")
+
+        #STATE NUMBER 19
+        if self.STATE == AngleAdjustForwardState:
+            canvas.itemconfig(self.StateNineRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateZeroRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateOneRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Goto Rotate States if second waited.\nElse if ><+-2.5in, adjust" )
+            self.AngleAdjustForward()
+
+        #STATE NUMBER 20
+        if self.STATE == RotateFaceRightState:
+            canvas.itemconfig(self.StateNineRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateZeroRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateOneRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Wait .25s" )
+            self.RotateFaceRight()
+
+        #STATE NUMBER 21
+        if self.STATE == RotateFaceLeftState:
+            canvas.itemconfig(self.StateNineRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateZeroRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateOneRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Wait .25s" )
+            self.RotateFaceLeft()
+        #STATE NUMBER 22
+        if self.STATE == AngleAdjustReverseState:
+            canvas.itemconfig(self.StateNineRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateZeroRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateOneRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Reverse Angle Adjust Crap" )
+            self.AngleAdjustReverse()
+
+        #STATE NUMBER 23
+        if self.STATE == RotateFaceRightReverseState:
+            canvas.itemconfig(self.StateNineRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateZeroRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateOneRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Wait .25s" )
+            self.RotateFaceRightReverse()
+
+        #STATE NUMBER 24
+        if self.STATE == RotateFaceLeftReverseState:
+            canvas.itemconfig(self.StateNineRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateZeroRectangle, outline = "#000000")
+            canvas.itemconfig(self.StateOneRectangle, outline = "#FF0000")
+            canvas.itemconfig(self.stateGoalText, text = "Wait .25s" )
+            self.RotateFaceLeftReverse()
             
         #Set AR Variables
         canvas.itemconfigure(self.zText,     text= "    Current Z :    "  + str(self.Z) + " in")
         canvas.itemconfigure(self.xText,     text= "    Current X :    "  + str(self.X) + " in")
         canvas.itemconfigure(self.stateText, text= "Current State:     "   + str(self.STATE))
+        canvas.itemconfigure(self.angleText, text = "Angle: " + str(self.Angle))
 
         self.master.update()
-        self.master.after(500, self.update)
+        self.master.after(250, self.update)
 
     def Start(self):
         rospy.loginfo("Start State")
@@ -274,39 +338,171 @@ class Gui(object):
         rospy.loginfo("State: %d", self.STATE)
         return
 
+    #State 19
+    def AngleAdjustForward(self):
+        rospy.loginfo("Angle Adjust Forward State")  
+
+        self.s.send(nop)
+
+        time_spent = time.time() - self.time
+        
+        #Base Case for Rotations
+        if time_spent > 1.5:
+            #Base Case for returning to driving state
+            if self.Angle < 1.5 and self.Angle > -1.5:
+                self.STATE = TraversingOutState
+                self.time = time.time()    
+                rospy.loginfo("Robot is returning to Traversing Out. STATE change to TraversingState(2)")
+                return
+            if self.AngleFlag == 1:
+                #Rotate LeftFace State
+                self.STATE = RotateFaceLeftState
+                self.time = time.time()    
+                rospy.loginfo("Robot is adjusting for left face. STATE change to RotateFaceLeft(21)")
+                return
+            else:
+                #Rotate RightFace State
+                self.STATE = RotateFaceRightState
+                self.time = time.time()    
+                rospy.loginfo("Robot is adjusting for right face. STATE change to RotateFaceRight(20)")
+                return
+
+    #State 22
+    def AngleAdjustReverse(self):
+        rospy.loginfo("Angle Adjust Reverse State")  
+
+        self.s.send(nop)
+
+        time_spent = time.time() - self.time
+
+        
+        #Base Case for Rotations
+        if time_spent > 1.5:
+
+            #Base Case for returning to driving state
+            if self.Angle < 1.5 and self.Angle > -1.5:
+                self.STATE = TraversingBackState
+                self.time = time.time()    
+                rospy.loginfo("Robot is returning to Traversing Back. STATE change to TraversingBackState(7)")
+                return
+            if self.AngleFlag == 1:
+                #Rotate LeftFace State
+                self.STATE = RotateFaceLeftReverseState
+                self.time = time.time()    
+                rospy.loginfo("Robot is adjusting for left face. STATE change to RotateFaceLeft(21)")
+                return
+            else:
+                #Rotate RightFace State
+                self.STATE = RotateFaceRightReverseState
+                self.time = time.time()    
+                rospy.loginfo("Robot is adjusting for right face. STATE change to RotateFaceRight(20)")
+                return
+
+    #State 20  
+    def RotateFaceRight(self):
+        rospy.loginfo("Rotate Face Right State")
+
+        self.s.send(LeftForwardRightBackward)
+
+        time_spent = time.time() - self.time
+        if time_spent > .25:
+            self.STATE = AngleAdjustForwardState
+            self.time = time.time()    
+            rospy.loginfo("Robot has adjusted right face. STATE change to AngleAdjustForward(19)")
+            return
+
+    #State 21
+    def RotateFaceLeft(self):
+        rospy.loginfo("Rotate Face Left State")  
+
+        self.s.send(RightForwardLeftBackward)
+
+        time_spent = time.time() - self.time
+        if time_spent > .25:
+            self.STATE = AngleAdjustForwardState
+            self.time = time.time()    
+            rospy.loginfo("Robot has adjusted left face. STATE change to AngleAdjustForward(19)")
+            return
+    #State 23
+    def RotateFaceRightReverse(self):
+        rospy.loginfo("Rotate Face Right Reverse State")
+
+        self.s.send(LeftForwardRightBackward)
+
+        time_spent = time.time() - self.time
+        if time_spent > .25:
+            self.STATE = AngleAdjustReverseState
+            self.time = time.time()    
+            rospy.loginfo("Robot has adjusted right face Reverse. STATE change to AngleAdjustReverse(19)")
+            return
+
+    #State 24
+    def RotateFaceLeftReverse(self):
+        rospy.loginfo("Rotate Face Left ReverseState")  
+
+        self.s.send(RightForwardLeftBackward)
+
+        time_spent = time.time() - self.time
+        if time_spent > .25:
+            self.STATE = AngleAdjustReverseState
+            self.time = time.time()    
+            rospy.loginfo("Robot has adjusted left face Reverse. STATE change to AngleAdjustReverse(19)")
+            return
+
+
+
     def TraversingOut(self):
         rospy.loginfo("Traversing Out State")    
 
         #Check if Finished Driving Out
         if self.Z > (StartMiningDistance - RobotSize):
             self.STATE = LowerConveyorState
-            self.time = time.time()
+            self.time = time.time()    
             rospy.loginfo("Robot has reached the mining area. STATE change to Lower(2)")
             return
   
         #Drive forward
         self.s.send(StateOneZero)
 
+        #Angle too big.
+        if self.Angle > 1.5 or self.Angle < -1.5:
+            self.STATE = AngleAdjustForwardState
+            self.time = time.time()    
+            rospy.loginfo("Robot is adjusting the Angle. STATE change to AngleAdjustForward(19)")
+            return
+
+
+            
+                    
+
+
         #Too Far left
         if self.X < (-1) * StandardThreshold:
             rospy.loginfo("Robot is too far to the left of the centerline. Correcting...") 
+            #while self.Angle > 5 and self.Angle < -5:
+            #$    if self.Angle > 0:
+                   
             #Toggle Right High on and off to correct
             #self.s.send(StateOneTwo)
             #self.s.send(StateOneZero)
-            return
+
         
         #Too far right
-        if self.X > StandardThreshold: 
+        if self.X > StandardThreshold:
             rospy.loginfo("Robot is too far to the right of the centerline. Correcting...")
             #Toggle Left High on and off to correct
             #self.s.send(StateOneOne)
             #self.s.send(StateOneZero)
-            return
+
         
     def LowerConveyor(self):
         rospy.loginfo("Lower State")
-        
-        self.s.send(convIn)
+
+        if CanConveyor == 1:
+            self.s.send(convIn)
+        else:
+            rospy.loginfo("Conveyor function turned off for testing.")
+
         time_spent = time.time() - self.time
 
         if time_spent > 3:
@@ -357,7 +553,7 @@ class Gui(object):
 
         #Finished Mining
         if self.Z > adjustedMiningDistance:
-            self.STATE = FinishMineSpinState 
+            self.STATE = FinishMineSpinState
             self.time = time.time()
             rospy.loginfo("Robot has finished mining. STATE change to FinishMineSpinState(6)")
             return
@@ -374,7 +570,7 @@ class Gui(object):
             return
         
         #Too Far Left
-        if self.X > StandardThreshold: 
+        if self.X > StandardThreshold:
             rospy.loginfo("While Mining, Robot is too far to the right of the centerline. Correcting...")
             #Toggle Left High on and off to correct
             #self.s.send(StateTwoOne)
@@ -386,7 +582,7 @@ class Gui(object):
 
         self.s.send(moveDumpOut)
         time_spent = time.time() - self.time
-        if time_spent > 2:
+        if time_spent > 1.25:
             self.STATE = MiningState
             self.time = time.time()
             rospy.loginfo("Robot has finished RearConveyor spinning. STATE change to Mining(1)")
@@ -415,6 +611,13 @@ class Gui(object):
         
         #Drive forward
         self.s.send(StateThreeZero)
+
+        #Angle too big.
+        if self.Angle > 1.5 or self.Angle < -1.5:
+            self.STATE = AngleAdjustReverseState
+            self.time = time.time()    
+            rospy.loginfo("Robot is adjusting the Angle. STATE change to AngleAdjustReverse(22)")
+            return
 
         #Too Far left
         if self.X < (-1) * StandardThreshold:
@@ -513,6 +716,8 @@ class Gui(object):
 
         self.X = data.data[0]
         self.Z = data.data[1]
+        self.Angle = data.data[2]
+        self.AngleFlag = data.data[3]
 
 if __name__ == '__main__':
     rospy.init_node('MoonBrain')

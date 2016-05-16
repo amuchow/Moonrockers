@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <!-- AR Size of 5cm-->
-    <arg name="marker_size" default="36.195" />
+    <arg name="marker_size" default="26.00" />
     <arg name="max_new_marker_error" default="0.08" />
     <arg name="max_track_error" default="0.00" />
 
