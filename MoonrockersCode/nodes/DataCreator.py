@@ -42,7 +42,7 @@ class Gui(object):
         ZValue.set("1")
         XValue.set("1")
         AngleValue.set("1")
-        negativeAngleFlagValue("1")
+        negativeAngleFlagValue.set("1")
     
         B = Button(master, text ="Send", command = self.helloCallBack)
         B.pack()
@@ -61,8 +61,9 @@ class Gui(object):
         packet = Float32MultiArray()
         packet.data.append(int(myX))
         packet.data.append(int(myZ))
-        packet.data.append(int(myAngle))
+        packet.data.append(float(myAngle))
         packet.data.append(int(myFlag))
+        packet.data.append(int(myX))
         Packet = Float32MultiArray()
 
         self.pub.publish(packet)

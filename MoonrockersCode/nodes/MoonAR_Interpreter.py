@@ -202,6 +202,7 @@ class Gui(object):
         packet.data.append(self.myZ)
         packet.data.append(self.angle)
         packet.data.append(self.negativeAngle)
+	packet.data.append(distX)
 
 
         #print "Downrange Distance from Marker = %6.3f\"" % (distOut)

@@ -23,7 +23,7 @@ import Queue
 RobotSize                = 46
 StandardThreshold        = 6
 DepositingThreshold      = 3
-StartMiningDistance      = 180
+StartMiningDistance      = 190
 StopMiningDistance       = 290
 CloseDepositDistance     = 30
 DepositDistance          = 20
@@ -342,14 +342,19 @@ class Gui(object):
     def AngleAdjustForward(self):
         rospy.loginfo("Angle Adjust Forward State")  
 
-        self.s.send(nop)
-
         time_spent = time.time() - self.time
-        
+
+        #Drive Forward
+        if time_spent < 3.0:
+            self.s.send(StateOneZero)
+        #Settle Robot Down
+        if time_spent > 3.0 and time_spent < 4.0:
+            self.s.send(nop)
+
         #Base Case for Rotations
-        if time_spent > 1.5:
+        if time_spent > 4.0:
             #Base Case for returning to driving state
-            if self.Angle < 1.5 and self.Angle > -1.5:
+            if self.Angle < 2.0 and self.Angle > -2.0:
                 self.STATE = TraversingOutState
                 self.time = time.time()    
                 rospy.loginfo("Robot is returning to Traversing Out. STATE change to TraversingState(2)")
@@ -371,16 +376,19 @@ class Gui(object):
     def AngleAdjustReverse(self):
         rospy.loginfo("Angle Adjust Reverse State")  
 
-        self.s.send(nop)
-
         time_spent = time.time() - self.time
-
+        #Drive Forward
+        if time_spent < 3.0:
+            self.s.send(StateThreeZero)
+        #Settle Robot Down
+        if time_spent > 3.0 and time_spent < 4.0:
+            self.s.send(nop)
         
         #Base Case for Rotations
-        if time_spent > 1.5:
+        if time_spent > 4.0:
 
             #Base Case for returning to driving state
-            if self.Angle < 1.5 and self.Angle > -1.5:
+            if self.Angle < 1.25 and self.Angle > -1.25:
                 self.STATE = TraversingBackState
                 self.time = time.time()    
                 rospy.loginfo("Robot is returning to Traversing Back. STATE change to TraversingBackState(7)")
@@ -465,7 +473,7 @@ class Gui(object):
         self.s.send(StateOneZero)
 
         #Angle too big.
-        if self.Angle > 1.5 or self.Angle < -1.5:
+        if self.Angle > 2.0 or self.Angle < -2.0:
             self.STATE = AngleAdjustForwardState
             self.time = time.time()    
             rospy.loginfo("Robot is adjusting the Angle. STATE change to AngleAdjustForward(19)")
@@ -613,7 +621,7 @@ class Gui(object):
         self.s.send(StateThreeZero)
 
         #Angle too big.
-        if self.Angle > 1.5 or self.Angle < -1.5:
+        if self.Angle > 1.25 or self.Angle < -1.25:
             self.STATE = AngleAdjustReverseState
             self.time = time.time()    
             rospy.loginfo("Robot is adjusting the Angle. STATE change to AngleAdjustReverse(22)")
