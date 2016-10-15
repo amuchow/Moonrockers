@@ -1,0 +1,6 @@
+README for telecommunications
+---------------------------------
+
+If you edit brain.c in the folder and use "make" to build the program, it will compile brain.c with the correct arduino and c libraries.
+
+Needs verification, as I am unable to test it on my VM(I have no PCDuino).
